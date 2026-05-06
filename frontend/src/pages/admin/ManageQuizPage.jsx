@@ -57,58 +57,89 @@ export default function ManageQuizPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
         <div>
           <h1 className="text-2xl font-bold gradient-text mb-1">Kelola Kuis</h1>
-          <p className="text-text-secondary text-sm">Buat kuis dan tambahkan soal</p>
+          <p className="text-text-secondary text-sm">Buat kuis dan tambahkan soal untuk pengguna</p>
         </div>
-        <button onClick={() => setShowQuizModal(true)} className="btn-primary text-sm flex items-center gap-2"><FiPlus /> Buat Kuis</button>
+        <button onClick={() => setShowQuizModal(true)} className="admin-btn">
+          <FiPlus size={16} /> Buat Kuis
+        </button>
       </div>
 
       {quizzes.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center"><p className="text-text-muted">Belum ada kuis</p></div>
+        <div className="admin-panel flex items-center justify-center py-16 text-text-muted">
+          <p>Belum ada kuis yang dibuat.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {quizzes.map(quiz => (
-            <div key={quiz.id} className="glass rounded-2xl overflow-hidden card-hover">
-              <div className="flex items-center justify-between p-5 cursor-pointer" onClick={() => toggleExpand(quiz.id)}>
+            <div key={quiz.id} className="admin-panel p-0 overflow-hidden">
+              <div 
+                className="flex items-center justify-between p-5 cursor-pointer hover:bg-bg-input transition-colors" 
+                onClick={() => toggleExpand(quiz.id)}
+              >
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg ${quiz.kategori === 'psikotes' ? 'gradient-accent' : 'gradient-primary'}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-lg ${quiz.kategori === 'psikotes' ? 'gradient-accent shadow-accent/20' : 'gradient-primary shadow-primary/20'}`}>
                     {quiz.kategori === 'psikotes' ? '🧠' : '📝'}
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-text-primary">{quiz.judul}</h3>
-                    <p className="text-xs text-text-muted capitalize">{quiz.kategori} · {quiz.deskripsi || 'Tanpa deskripsi'}</p>
+                    <h3 className="text-base font-bold text-text-primary mb-1">{quiz.judul}</h3>
+                    <p className="text-xs text-text-muted capitalize flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${quiz.kategori === 'psikotes' ? 'bg-accent/15 text-accent' : 'bg-primary/15 text-primary'}`}>
+                        {quiz.kategori}
+                      </span>
+                      {quiz.deskripsi || 'Tanpa deskripsi'}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button onClick={(e) => { e.stopPropagation(); deleteQuiz(quiz.id); }}
-                    className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all bg-transparent border-none cursor-pointer"><FiTrash2 size={16} /></button>
-                  {expanded === quiz.id ? <FiChevronUp className="text-primary" /> : <FiChevronDown className="text-text-muted" />}
+                    className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all bg-transparent border-none cursor-pointer" title="Hapus Kuis">
+                    <FiTrash2 size={18} />
+                  </button>
+                  <div className="w-8 h-8 rounded-full bg-bg-input border border-border flex items-center justify-center text-text-muted">
+                    {expanded === quiz.id ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+                  </div>
                 </div>
               </div>
 
               {expanded === quiz.id && quizDetail[quiz.id] && (
-                <div className="border-t border-border p-5 animate-fade-in">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium text-text-secondary">Soal ({quizDetail[quiz.id].Questions?.length || 0})</p>
-                    <button onClick={() => openAddSoal(quiz.id)} className="text-xs btn-primary flex items-center gap-1 py-1.5 px-3"><FiPlus size={14} /> Tambah Soal</button>
+                <div className="border-t border-border p-5 bg-bg-body/30 animate-fade-in">
+                  <div className="flex items-center justify-between mb-5">
+                    <h4 className="text-sm font-bold text-text-secondary uppercase tracking-wider">
+                      Daftar Soal ({quizDetail[quiz.id].Questions?.length || 0})
+                    </h4>
+                    <button onClick={() => openAddSoal(quiz.id)} className="admin-btn py-1.5 px-3 text-xs">
+                      <FiPlus size={14} /> Tambah Soal
+                    </button>
                   </div>
+
                   {(!quizDetail[quiz.id].Questions || quizDetail[quiz.id].Questions.length === 0) ? (
-                    <p className="text-sm text-text-muted text-center py-4">Belum ada soal</p>
+                    <div className="border border-dashed border-border rounded-xl p-8 text-center text-text-muted text-sm">
+                      Belum ada soal untuk kuis ini.
+                    </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {quizDetail[quiz.id].Questions.map((s, i) => (
-                        <div key={s.id} className="bg-bg-card rounded-xl p-4 border border-border">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <p className="text-sm text-text-primary"><span className="text-text-muted mr-2">{i+1}.</span>{s.teks_soal}</p>
-                            <button onClick={() => deleteSoal(quiz.id, s.id)} className="p-1 text-text-muted hover:text-danger bg-transparent border-none cursor-pointer flex-shrink-0"><FiTrash2 size={14} /></button>
+                        <div key={s.id} className="bg-bg-card rounded-xl p-5 border border-border shadow-sm">
+                          <div className="flex items-start justify-between gap-4 mb-4">
+                            <p className="text-sm text-text-primary font-medium leading-relaxed">
+                              <span className="text-primary font-bold mr-2">{i+1}.</span>
+                              {s.teks_soal}
+                            </p>
+                            <button onClick={() => deleteSoal(quiz.id, s.id)} className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger/10 bg-transparent border-none cursor-pointer flex-shrink-0" title="Hapus Soal">
+                              <FiTrash2 size={16} />
+                            </button>
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {['a','b','c','d'].map(k => (
-                              <p key={k} className={`text-xs px-3 py-1.5 rounded-lg ${s.jawaban_benar === k ? 'bg-success/10 text-success font-medium' : 'bg-bg-surface text-text-muted'}`}>
-                                {k.toUpperCase()}. {s[`opsi_${k}`]}
-                              </p>
+                              <div key={k} className={`text-xs px-4 py-2.5 rounded-lg border flex items-center gap-3 ${s.jawaban_benar === k ? 'border-success bg-success/10 text-success' : 'border-border bg-bg-input text-text-sec'}`}>
+                                <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold flex-shrink-0 ${s.jawaban_benar === k ? 'bg-success text-white' : 'bg-bg-surface text-text-muted'}`}>
+                                  {k.toUpperCase()}
+                                </span>
+                                <span>{s[`opsi_${k}`]}</span>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -124,23 +155,29 @@ export default function ManageQuizPage() {
 
       {/* Quiz Modal */}
       {showQuizModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-md animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-text-primary">Buat Kuis Baru</h2>
-              <button onClick={() => setShowQuizModal(false)} className="p-2 rounded-lg text-text-muted hover:text-text-primary bg-transparent border-none cursor-pointer"><FiX /></button>
+        <div className="admin-modal-overlay">
+          <div className="admin-modal">
+            <div className="admin-modal__header">
+              <h2 className="admin-modal__title">Buat Kuis Baru</h2>
+              <button onClick={() => setShowQuizModal(false)} className="admin-modal__close"><FiX size={18} /></button>
             </div>
             <div className="space-y-4">
-              <input value={qForm.judul} onChange={e => setQForm({...qForm, judul: e.target.value})} placeholder="Judul kuis"
-                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all" />
-              <textarea value={qForm.deskripsi} onChange={e => setQForm({...qForm, deskripsi: e.target.value})} rows={2} placeholder="Deskripsi"
-                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all resize-none" />
-              <select value={qForm.kategori} onChange={e => setQForm({...qForm, kategori: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary focus:outline-none focus:border-primary/50 transition-all">
-                <option value="umum" className="bg-bg-surface">Umum</option>
-                <option value="psikotes" className="bg-bg-surface">Psikotes</option>
-              </select>
-              <button onClick={addQuiz} className="w-full btn-primary text-sm flex items-center justify-center gap-2"><FiSave /> Simpan</button>
+              <div>
+                <label className="admin-label">Judul Kuis</label>
+                <input value={qForm.judul} onChange={e => setQForm({...qForm, judul: e.target.value})} placeholder="Masukkan judul..." className="admin-input" />
+              </div>
+              <div>
+                <label className="admin-label">Deskripsi</label>
+                <textarea value={qForm.deskripsi} onChange={e => setQForm({...qForm, deskripsi: e.target.value})} rows={3} placeholder="Masukkan deskripsi..." className="admin-input resize-none" />
+              </div>
+              <div>
+                <label className="admin-label">Kategori</label>
+                <select value={qForm.kategori} onChange={e => setQForm({...qForm, kategori: e.target.value})} className="admin-input">
+                  <option value="umum" className="bg-bg-surface">Umum</option>
+                  <option value="psikotes" className="bg-bg-surface">Psikotes</option>
+                </select>
+              </div>
+              <button onClick={addQuiz} className="admin-btn w-full mt-2"><FiSave size={16} /> Simpan Kuis</button>
             </div>
           </div>
         </div>
@@ -148,24 +185,35 @@ export default function ManageQuizPage() {
 
       {/* Soal Modal */}
       {showQModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-text-primary">Tambah Soal</h2>
-              <button onClick={() => setShowQModal(false)} className="p-2 rounded-lg text-text-muted hover:text-text-primary bg-transparent border-none cursor-pointer"><FiX /></button>
+        <div className="admin-modal-overlay">
+          <div className="admin-modal" style={{ maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="admin-modal__header sticky top-0 bg-bg-card z-10 pt-2 pb-4 border-b border-border mb-4 -mx-6 px-6 -mt-2">
+              <h2 className="admin-modal__title">Tambah Soal</h2>
+              <button onClick={() => setShowQModal(false)} className="admin-modal__close"><FiX size={18} /></button>
             </div>
             <div className="space-y-4">
-              <textarea value={soalForm.teks_soal} onChange={e => setSoalForm({...soalForm, teks_soal: e.target.value})} rows={3} placeholder="Pertanyaan"
-                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all resize-none" />
-              {['a','b','c','d'].map(k => (
-                <input key={k} value={soalForm[`opsi_${k}`]} onChange={e => setSoalForm({...soalForm, [`opsi_${k}`]: e.target.value})} placeholder={`Opsi ${k.toUpperCase()}`}
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all" />
-              ))}
-              <select value={soalForm.jawaban_benar} onChange={e => setSoalForm({...soalForm, jawaban_benar: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border text-text-primary focus:outline-none focus:border-primary/50 transition-all">
-                {['a','b','c','d'].map(k => <option key={k} value={k} className="bg-bg-surface">Jawaban Benar: {k.toUpperCase()}</option>)}
-              </select>
-              <button onClick={addSoal} className="w-full btn-primary text-sm flex items-center justify-center gap-2"><FiSave /> Simpan Soal</button>
+              <div>
+                <label className="admin-label">Pertanyaan</label>
+                <textarea value={soalForm.teks_soal} onChange={e => setSoalForm({...soalForm, teks_soal: e.target.value})} rows={3} placeholder="Masukkan pertanyaan..." className="admin-input resize-none" />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {['a','b','c','d'].map(k => (
+                  <div key={k}>
+                    <label className="admin-label">Opsi {k.toUpperCase()}</label>
+                    <input value={soalForm[`opsi_${k}`]} onChange={e => setSoalForm({...soalForm, [`opsi_${k}`]: e.target.value})} placeholder={`Teks opsi ${k.toUpperCase()}`} className="admin-input" />
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="admin-label">Jawaban Benar</label>
+                <select value={soalForm.jawaban_benar} onChange={e => setSoalForm({...soalForm, jawaban_benar: e.target.value})} className="admin-input">
+                  {['a','b','c','d'].map(k => <option key={k} value={k} className="bg-bg-surface">Opsi {k.toUpperCase()}</option>)}
+                </select>
+              </div>
+
+              <button onClick={addSoal} className="admin-btn w-full mt-4"><FiSave size={16} /> Simpan Soal</button>
             </div>
           </div>
         </div>

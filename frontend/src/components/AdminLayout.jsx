@@ -1,6 +1,8 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import AdminSidebar from './AdminSidebar';
+import AdminHeader from './AdminHeader';
 import { useAuth } from '../context/AuthContext';
+import { AdminThemeProvider, useAdminTheme } from '../context/AdminThemeContext';
 
 export default function AdminLayout() {
   const { admin } = useAuth();
@@ -10,11 +12,27 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-body flex">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-6 lg:p-8 transition-all duration-300">
-        <Outlet />
-      </main>
+    <AdminThemeProvider>
+      <AdminLayoutInner />
+    </AdminThemeProvider>
+  );
+}
+
+function AdminLayoutInner() {
+  const { sidebarCollapsed } = useAdminTheme();
+
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div
+        className="admin-main"
+        style={{ marginLeft: sidebarCollapsed ? '72px' : '260px' }}
+      >
+        <AdminHeader />
+        <main className="admin-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
